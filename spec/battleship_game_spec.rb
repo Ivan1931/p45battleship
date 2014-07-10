@@ -62,20 +62,19 @@ describe '#battleshiphelper' do
     let(:o) { Point.new 0, 0 }
 
     describe 'creation of ships' do
-      let(:o_hash) { {x: 0, y: 0 } }
-      let(:yl) { { x: 0, y: 1 } }
-      let(:xl) { { x: 1, y: 0 } }
+      let(:yl) { Point.new( 0, 1) }
+      let(:xl) { Point.new( 1, 0) }
 
       describe 'with legal positions, only testing south and east as those are all that are needed' do
 
         it 'correctly makes ship south' do
           s = Ship.new o, :south, 2
-          expect(s.points).to eq([o_hash, yl])
+          expect(s.points).to eq([o, yl])
         end
 
         it 'correctly makes a ship east' do
           s = Ship.new o, :east, 2
-          expect(s.points).to eq([o_hash, xl])
+          expect(s.points).to eq([o, xl])
         end
 
       end
@@ -96,6 +95,37 @@ describe '#battleshiphelper' do
 
     end
 
+    describe '#ship types' do
+      context '|valid ship types' do
+        it 'carrier is a valid ship' do
+          expect(Ship.valid_ship_type?(:carrier)).to eq(true)
+        end
+
+        it 'battleship is a valid ship' do
+          expect(Ship.valid_ship_type?(:battleship)).to eq(true)
+        end
+
+        it 'destroyer is a valid ship' do
+          expect(Ship.valid_ship_type?(:destroyer)).to eq(true)
+        end
+
+        it 'patrol is a valid ship' do
+          expect(Ship.valid_ship_type?(:patrol)).to eq(true)
+        end
+
+        it 'submarine is a valid ship' do
+          expect(Ship.valid_ship_type?(:submarine)).to eq(true)
+        end
+
+      end
+
+      context '#Invalid ship types' do
+        it 'Bleh is an invalid ship type' do
+          expect(Ship.valid_ship_type?(:bleh)).to eq(false)
+        end
+      end
+    end
+
     describe '#ship targeting' do
       let(:ship) { Ship.new o, :south, 2 }
       it 'is false when nothing is fired at ship' do
@@ -114,26 +144,52 @@ describe '#battleshiphelper' do
       end
     end
 
+
   end
+
   describe Grid do
     let(:empty_grid) { Grid.new(:empty) }
+    let(:o) { Point.new 0, 0 }
 
     describe 'Modification of the board' do
-      subject { empty_grid }
 
-      it 'differs from grid with changed square' do
-        modified_grid = Grid.new(:empty).set_square(0, 0, :ship)
-        expect(empty_grid).to_not eq(modified_grid)
+      context 'Valid square types' do
+
+        subject { empty_grid }
+
+        it 'differs from grid with changed square' do
+          modified_grid = Grid.new(:empty).set_square(o, :hit)
+          expect(empty_grid.grid).to_not eq(modified_grid.grid)
+        end
+
+        it 'Set square returns the same grid' do
+          expect(empty_grid.set_square(o, :hit).object_id).to eql(empty_grid.object_id)
+        end
+
+        it 'set stores value in the correct place' do
+          expect(empty_grid.set_square(o, :hit).grid[0][0]).to eq(:hit)
+        end
       end
 
-      it 'is the same grid when the square is returned' do
-        expect(empty_grid.set_square(0, 0, :ship)).to eql(empty_grid)
+      context 'invalid square type' do
+        it 'raises argument error' do
+          expect{empty_grid.set_square(o, :dskaljaslk)}.to raise_error(ArgumentError)
+        end
+      end
+    end
+
+    describe 'checking if a ship can be placed at a certain point' do
+      let(:origin_set_grid) { Grid.new(:unknown).set_square(o, :empty) }
+      let(:submarine) { Submarine.new o, :south }
+      let(:battleship) { BattleShip.new o.increment(:south), :east}
+
+      it 'No ship can be set at origin' do
+        expect(origin_set_grid.can_place_ship?(submarine)).to eq(false)
       end
 
-      it 'set stores value in the correct place' do
-        expect(empty_grid.set_square(0, 0, :ship).grid[0][0]).to eq(:ship)
+      it 'Ships can be places else where' do
+        expect(origin_set_grid.can_place_ship?(battleship)).to eq(true)
       end
-
     end
   end
 
