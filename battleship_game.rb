@@ -1,4 +1,4 @@
-require 'pry'
+#require 'pry'
 
 module BattleShipsHelper
 
@@ -11,6 +11,10 @@ module BattleShipsHelper
     def initialize x, y
       @x, @y = x, y
       raise_exception_for_illegal_points! unless self.is_legal?
+    end
+
+    def self.new_with_hash *args
+      Point.new args[:x], args[:y]
     end
     
     def destruct
@@ -36,6 +40,8 @@ module BattleShipsHelper
         Point.new @x - 1, @y
       when :east
         Point.new @x + 1, @y
+      else
+        raise ArgumentError, "Direction #{direction} is not recognised"
       end
     end
 
@@ -55,7 +61,7 @@ end
 include BattleShipsHelper
 
 class Ship
-  attr_reader :sunk, :points, :type, :hit_status
+  attr_reader :sunk, :type, :hit_status
 
   def initialize starting_point, direction, length
 
@@ -75,15 +81,30 @@ class Ship
     iterations.times do |i|
       temp_point = temp_point.increment direction
       @points[i + 1] = temp_point
-      @hit_status[starting_point.to_hash] = false
+      @hit_status[temp_point.to_hash] = false
     end
 
   end
 
+  def points
+    @hit_status.keys
+  end
+
   def is_hit? point
+    point_hash = point.to_hash
+    @hit_status[point_hash] == true
   end
 
   def attack! point
+    point_hash = point.to_hash
+    if @hit_status.has_key?(point_hash)
+      @hit_status[point_hash] = true
+    end
+    self
+  end
+
+  def is_sunk?
+    @hit_status.values.all? {|elem| elem }
   end
 
   private
@@ -150,16 +171,67 @@ class Patrol < Ship
 end
 
 class Grid
-  attr_accessor :ships
+
   attr_reader :grid
 
-  def initialize initial_symbol
-    
+  def initialize(initial_sym = :unknown, grid = nil)
+    @grid = if grid.nil? then Grid.make_empty_grid(initial_sym) else grid end
+  end
+
+  def set_ship(x, y, ship_type, direction)
+    increment_function = -> (a, b) do
+      case direction
+      when :north
+        return a, b - 1
+      when :south
+        return a, b + 1
+      when :east
+        return a + 1, b
+      when :west
+        return a - 1, b
+      end
+    end
+
+    ship_length(ship_type).times do 
+      self.set_square x, y, ship_type
+      x, y = increment_function.call x, y
+    end
+
+    self
+  end
+
+  def set_square(x, y, ship_type)
+    Grid.raise_out_of_grid!(x, y) if Grid.out_of_grid?(x, y)
+    grid[x][y] = ship_type
+    self
+  end
+
+  def self.make_empty_grid(initial_sym = :unknown) # this makes an empty board with everything on the board considered an unknown
+    Array.new(10) { Array.new(10, initial_sym) }
+  end
+
+  def self.out_of_grid?(x, y)
+    x >= GRID_SIZE or y >= GRID_SIZE or x < 0 or y < 0
+  end
+
+  def self.raise_out_of_grid!(x, y)
+    raise ArgumentError, "Position #{x}, #{y} are outside of the posible bounds of the grid"
+  end
+
+  def count_destroyed_ships(ship_type)
+  end
+
+end
+
+
+class Opponent
+  attr_accessor :grid, :possible_ships
+  def initialize
   end
 end
 
-class Player
-  attr_accessor :opponent_grid, :grid
+class GameState
+  attr_accessor :opponent, :ships
 
   def initialize
 
