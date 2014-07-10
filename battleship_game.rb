@@ -104,6 +104,7 @@ class Grid
   end
 
   def can_place_ship? ship, allowed_square_type = [:unknown]
+    allowed_square_type.each { |type| Grid.raise_invalid_square_type!(type) unless Grid.valid_square_type? type }
     !ship.points.map do |point|
       val = value_for_point point
       allowed_square_type.include? val

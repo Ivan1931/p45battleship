@@ -178,7 +178,7 @@ describe '#battleshiphelper' do
       end
     end
 
-    describe 'checking if a ship can be placed at a certain point' do
+    describe 'checking if a ship can exist at a certain point' do
       let(:origin_set_grid) { Grid.new(:unknown).set_square(o, :empty) }
       let(:submarine) { Submarine.new o, :south }
       let(:battleship) { BattleShip.new o.increment(:south), :east}
@@ -190,7 +190,19 @@ describe '#battleshiphelper' do
       it 'Ships can be places else where' do
         expect(origin_set_grid.can_place_ship?(battleship)).to eq(true)
       end
+
+      it 'Ship cannot be placed legally if there are no allowed squares' do
+        expect(origin_set_grid.can_place_ship?(battleship, [])).to eq(false)
+      end
+
+      it 'Ship can be placed when its squares are allowed' do
+        expect(origin_set_grid.can_place_ship?(submarine, [:empty, :unknown])).to eq(true)
+      end
+
+      it 'method breaks with invalid square type' do
+        expect{ origin_set_grid.can_place_ship?(submarine, [:bleh]) }.to raise_error(ArgumentError)
+      end
+
     end
   end
-
 end
