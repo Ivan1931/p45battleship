@@ -31,6 +31,28 @@ describe Grid do
     end
   end
 
+  describe 'grid -> string' do
+    let(:empty_grid_string) { (1..GRID_SIZE).map { "E\t" * 9 + "E\n" }.join("")[0..-2] }
+    let(:top_row_covered) { "X\t" * 9 + "X\n" + (2..GRID_SIZE).map { "E\t" * 9 + "E\n" }.join("")[0..-2] }
+
+    let(:top_row_grid) do
+      g = Grid.new :empty
+      10.times do |x|
+        g = g.set_square(Point.new(x, 0), :hit)
+      end
+      g
+    end
+
+    it 'builds an empty string grid' do
+      expect(empty_grid.to_s).to eq(empty_grid_string)
+    end
+
+    it 'correctly matches all stuff on the top row' do
+      expect(top_row_grid.to_s).to eq(top_row_covered)
+    end
+
+  end
+
   describe 'checking if a ship can exist at a certain point' do
     let(:origin_set_grid) { Grid.new(:unknown).set_square(o, :empty) }
     let(:submarine) { Submarine.new o, :south }

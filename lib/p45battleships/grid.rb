@@ -48,6 +48,32 @@ module P45battleships
       raise ArgumentError, "The square type #{square_type} does not exist"
     end
 
+    def ship_type_string ship_type
+      case ship_type
+      when :empty
+        "E"
+      when :unknown
+        "?"
+      when :hit
+        "X"
+      when :recent_hit
+        "x"
+      end
+    end
+
+    def to_s
+      acc = ""
+      @grid.each_with_index do |column, y|
+        temp = ""
+        column.each_with_index do |square, x|
+          temp += ship_type_string(grid[x][y]) + "\t"
+        end
+        temp = temp[0..-2]
+        acc += temp + "\n" 
+      end
+      acc = acc[0..-2]
+    end
+
   end
 
 end
