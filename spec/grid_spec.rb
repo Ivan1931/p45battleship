@@ -53,29 +53,39 @@ describe Grid do
 
   end
 
-  describe 'checking if a ship can exist at a certain point' do
-    let(:origin_set_grid) { Grid.new(:unknown).set_square(o, :empty) }
+  describe 'ship placement' do
+
     let(:submarine) { Submarine.new o, :south }
-    let(:battleship) { BattleShip.new o.increment(:south), :east}
 
-    it 'No ship can be set at origin' do
-      expect(origin_set_grid.can_place_ship?(submarine)).to eq(false)
+    describe 'can_place_ship?' do
+      let(:origin_set_grid) { Grid.new(:unknown).set_square(o, :empty) }
+      let(:battleship) { BattleShip.new o.increment(:south), :east}
+
+      it 'No ship can be set at origin' do
+        expect(origin_set_grid.can_place_ship?(submarine)).to eq(false)
+      end
+
+      it 'Ships can be places else where' do
+        expect(origin_set_grid.can_place_ship?(battleship)).to eq(true)
+      end
+
+      it 'Ship cannot be placed legally if there are no allowed squares' do
+        expect(origin_set_grid.can_place_ship?(battleship, [])).to eq(false)
+      end
+
+      it 'Ship can be placed when its squares are allowed' do
+        expect(origin_set_grid.can_place_ship?(submarine, [:empty, :unknown])).to eq(true)
+      end
+
+      it 'method breaks with invalid square type' do
+        expect{ origin_set_grid.can_place_ship?(submarine, [:bleh]) }.to raise_error(ArgumentError)
+      end
+
     end
 
-    it 'Ships can be places else where' do
-      expect(origin_set_grid.can_place_ship?(battleship)).to eq(true)
-    end
-
-    it 'Ship cannot be placed legally if there are no allowed squares' do
-      expect(origin_set_grid.can_place_ship?(battleship, [])).to eq(false)
-    end
-
-    it 'Ship can be placed when its squares are allowed' do
-      expect(origin_set_grid.can_place_ship?(submarine, [:empty, :unknown])).to eq(true)
-    end
-
-    it 'method breaks with invalid square type' do
-      expect{ origin_set_grid.can_place_ship?(submarine, [:bleh]) }.to raise_error(ArgumentError)
+    describe 'place_ship' do
+      subject { Grid.new(:empty).place_ship(submarine) }
+      it { should eq(Grid.new(:empty).set_square(o, :submarine).set_square(o.increment(:south), :submarine)) }
     end
 
   end

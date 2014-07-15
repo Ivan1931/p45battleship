@@ -1,11 +1,13 @@
 module P45battleships
 
 class Ship
-  attr_reader :sunk, :type, :hit_status, :points
+  attr_reader :sunk, :type, :hit_status, :points, :name
 
   def initialize starting_point, direction, length
 
     raise ArgumentError, "The ship length #{length} is not a valid ship length" unless Ship.is_legal_length? length
+
+    @name = :ship
 
     @sunk = false
 
@@ -74,6 +76,7 @@ class Carrier < Ship
 
   def initialize starting_point, direction
     super(starting_point, direction, 5)
+    @name = :carrier
   end
 
   def length
@@ -86,6 +89,7 @@ class BattleShip < Ship
 
   def initialize starting_point, direction
     super(starting_point, direction, 4)
+    @name = :battleship
   end
 
   def length
@@ -98,6 +102,7 @@ class Destroyer < Ship
 
   def initialize starting_point, direction
     super(starting_point, direction, 3)
+    @name = :destroyer
   end
 
   def length
@@ -110,6 +115,7 @@ class Submarine < Ship
 
   def initialize starting_point, direction
     super(starting_point, direction, 2)
+    @name = :submarine
   end
 
   def length
@@ -122,6 +128,7 @@ class Patrol < Ship
 
   def initialize starting_point, direction
     super(starting_point, direction, 1)
+    @name = :patrol
   end
 
   def length

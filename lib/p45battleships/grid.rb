@@ -30,10 +30,11 @@ module P45battleships
     end
 
     def place_ship ship
-      ship_type = ship.class.to_s.downcase.intern
+      square_type = ship.name
       ship.points.each do |point|
-        set_square point, ship_type
+        set_square point, square_type
       end
+      self
     end
 
     def self.make_empty_grid initial_sym = :unknown # this makes an empty board with everything on the board considered an unknown
@@ -41,15 +42,19 @@ module P45battleships
     end
 
     def self.valid_square_type? square_type
-      square_type == :empty or square_type == :recent_hit or square_type == :hit or square_type == :unknown
+      square_type == :empty or square_type == :recent_hit or square_type == :hit or square_type == :unknown or Ship.valid_ship_type? square_type
     end
 
     def self.raise_invalid_square_type! square_type
       raise ArgumentError, "The square type #{square_type} does not exist"
     end
 
-    def ship_type_string ship_type
-      case ship_type
+    def == that
+      @grid == that.grid
+    end
+
+    def square_type_string square_type
+      case square_type
       when :empty
         "E"
       when :unknown
@@ -58,6 +63,8 @@ module P45battleships
         "X"
       when :recent_hit
         "x"
+      else
+        square_type.to_s[0].upcase
       end
     end
 
@@ -66,7 +73,7 @@ module P45battleships
       @grid.each_with_index do |column, y|
         temp = ""
         column.each_with_index do |square, x|
-          temp += ship_type_string(grid[x][y]) + "\t"
+          temp += square_type_string(grid[x][y]) + "\t"
         end
         temp = temp[0..-2]
         acc += temp + "\n" 
