@@ -1,4 +1,4 @@
-module Ships
+module P45battleships
 
 class Ship
   attr_reader :sunk, :type, :hit_status, :points

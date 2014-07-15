@@ -2,8 +2,6 @@ require 'spec_helper'
 
 describe '#battleshiphelper' do
 
-  include BattleShipsHelper
-
   describe '#points' do
 
     let(:o) { Point.new 0, 0 }

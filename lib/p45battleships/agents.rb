@@ -1,4 +1,4 @@
-module Agent
+module P45battleships
 
   class Opponent
     attr_accessor :grid, :possible_ships 
