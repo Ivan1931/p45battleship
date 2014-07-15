@@ -3,7 +3,7 @@ require 'json'
 
 module P45battleships
 
-  class Communicator
+  class Game
     attr_reader :base_url, :nuke_url, :register_url, :game_id, :history
 
     def initialize url
@@ -20,11 +20,11 @@ module P45battleships
 
     #the game communication loop
     def run_game initial_nuke
-      game_state = GameState.new
-      attack_result = game_state.respond_to_server initial_nuke
+      player = Player.new
+      attack_result = player.respond_to_server initial_nuke
       server_response = nuke attack_result
-      until server_says_lost? server_response or game_state.has_lost?
-        attack_result game_state.respond_to_server server_response
+      until server_says_lost? server_response or player.has_lost?
+        attack_result player.respond_to_server server_response
         server_response = nuke attack_result
       end
     end

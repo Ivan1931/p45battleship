@@ -67,7 +67,7 @@ module P45battleships
 
 end
 
-class GameState
+class Player
   attr_accessor :opponent, :ships, :agent
 
   def initialize agent = nil

@@ -57,13 +57,13 @@ describe '#battleshiphelper' do
   end
 
   describe "GameState" do
-    let(:state) { GameState.new }
+    let(:player) { Player.new }
 
     it 'has no intersecting ships' do
       # yucky O(n^2) algoritm to check for intersecting ships
       # is there any point in actually testing this since it is a totally random phenomenon
-      state.ships.each do |this|
-        state.ships.each do |that|
+      player.ships.each do |this|
+        player.ships.each do |that|
           unless this == that
             expect(this.intersects_with?(that)).to eq(false)
           end
@@ -71,17 +71,17 @@ describe '#battleshiphelper' do
       end
     end
     
-    subject { state.ships.length }
+    subject { player.ships.length }
 
     it { should eq(7) }
 
     describe 'sinking ships man' do
-      subject { state.defeated? }
+      subject { player.defeated? }
       it { should eq(false) }
 
       it 'is defeated when there are no ships' do
-        state.ships = []
-        expect(state.defeated?).to eq(true)
+        player.ships = []
+        expect(player.defeated?).to eq(true)
       end
 
     end
