@@ -43,6 +43,13 @@ class Ship
     @hit_status.values.all? {|elem| elem }
   end
 
+  def intersects_with? ship
+    @points.each do |point|
+      return true if ship.points.include? point
+    end
+    false
+  end
+
   def self.valid_ship_type? ship_type 
     Ship.ship_types.any? {|s| ship_type == s }
   end

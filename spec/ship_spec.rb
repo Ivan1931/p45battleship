@@ -87,4 +87,23 @@ describe '#ships' do
   end
 
 
+  describe '.intersects with ship method' do
+    let(:origin_ship) { Submarine.new o, :south }
+    let(:another_origin_ship) { Submarine.new o, :east }
+    let(:next_to_origin_ship) { Submarine.new o.increment(:east), :south }
+
+    it 'Ships always intersect with themselves' do
+      expect(origin_ship.intersects_with?(origin_ship)).to eq(true)
+    end
+
+    it 'is false if ships when ships dont intersect' do
+      expect(origin_ship.intersects_with?(next_to_origin_ship)).to eq(false)
+    end
+
+    it 'true if at least one point is common' do
+      expect(origin_ship.intersects_with?(another_origin_ship)).to eq(true)
+    end
+
+  end
+
 end

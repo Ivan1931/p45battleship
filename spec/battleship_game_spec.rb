@@ -43,20 +43,50 @@ describe '#battleshiphelper' do
       end
 
       it '(0, -1) is illegal' do
-        expect{Point.new 0, -1}.to raise_error(ArgumentError  )
+        expect{Point.new 0, -1}.to raise_error(ArgumentError)
       end
 
       it '(0, GRID_SIZE) is illegal' do
-        expect{Point.new 0, GRID_SIZE}.to raise_error(ArgumentError )
+        expect{Point.new 0, GRID_SIZE}.to raise_error(ArgumentError)
       end
 
       it '(GRID_SIZE, 0) is illegal' do
-        expect{Point.new GRID_SIZE, 0}.to raise_error(ArgumentError )
+        expect{Point.new GRID_SIZE, 0}.to raise_error(ArgumentError)
       end
 
     end
 
   end
 
+  describe "GameState" do
+    let(:state) { GameState.new }
 
+    it 'has no intersecting ships' do
+      # yucky O(n^2) algoritm to check for intersecting ships
+      # is there any point in actually testing this since it is a totally random phenomenon
+      state.ships.each do |this|
+        state.ships.each do |that|
+          unless this == that
+            expect(this.intersects_with?(that)).to eq(false)
+          end
+        end
+      end
+    end
+    
+    subject { state.ships.length }
+
+    it { should eq(7) }
+
+    describe 'sinking ships man' do
+      subject { state.defeated? }
+      it { should eq(false) }
+
+      it 'is defeated when there are no ships' do
+        state.ships = []
+        expect(state.defeated?).to eq(true)
+      end
+
+    end
+
+  end
 end

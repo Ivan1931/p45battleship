@@ -28,6 +28,13 @@ class Grid
     @grid[x][y]
   end
 
+  def place_ship ship
+    ship_type = ship.class.to_s.downcase.intern
+    ship.points.each do |point|
+      set_square point, ship_type
+    end
+  end
+
   def self.make_empty_grid initial_sym = :unknown # this makes an empty board with everything on the board considered an unknown
     Array.new(10) { Array.new(10, initial_sym) }
   end
