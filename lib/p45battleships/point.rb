@@ -16,6 +16,18 @@ module P45battleships
       Point.new args[:x], args[:y]
     end
 
+    def self.new_as_random
+      Point.new(Random.rand(0..GRID_SIZE - 1), Random.rand(0..GRID_SIZE - 1))
+    end
+
+    def self.new_from_point point
+      Point.new point.x, point.y
+    end
+
+    def self.origin
+      Point.new 0, 0
+    end
+
     def destruct
       return @x, @y
     end
@@ -46,12 +58,6 @@ module P45battleships
 
     def ==(that)
       that.x == @x and that.y == @y
-    end
-
-    def self.new_as_random
-      x = Random.rand(0..GRID_SIZE)
-      y = Random.rand(0..GRID_SIZE)
-      Point.new x, y
     end
 
     private

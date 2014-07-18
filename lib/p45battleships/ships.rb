@@ -64,6 +64,28 @@ class Ship
     Set.new [:battleship, :carrier, :destroyer, :submarine, :patrol]
   end
 
+  def self.ship_factory starting_point, direction, ship_type
+    case ship_type
+    when :carrier
+      Carrier.new starting_point, direction
+
+    when :battleship
+      BattleShip.new starting_point, direction
+
+    when :destroyer
+      Destroyer.new starting_point, direction
+
+    when :submarine
+      Submarine.new starting_point, direction
+
+    when :patrol
+      Patrol.new starting_point, direction
+
+    else
+      Ship.raise_invalid_ship_error ship_type
+    end
+  end
+
   private
 
   def self.is_legal_length? length

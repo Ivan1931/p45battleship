@@ -8,6 +8,7 @@ module P45battleships
     end
 
     def set_square point, square_type
+      square_type = :empty if square_type == :miss
       Grid.raise_invalid_square_type!(square_type) unless Grid.valid_square_type? square_type
 
       x, y = point.destruct
@@ -35,6 +36,18 @@ module P45battleships
         set_square point, square_type
       end
       self
+    end
+
+    def eliminate_recent_hits
+      GRID_SIZE.times do |i|
+        GRID_SIZE.times do |j|
+          @grid[i][j] = :hit if @grid[i][j] == :recent_hit
+        end
+      end
+    end
+
+    def is_unknown? point
+      (value_for_point point) == :unknown
     end
 
     def self.make_empty_grid initial_sym = :unknown # this makes an empty board with everything on the board considered an unknown

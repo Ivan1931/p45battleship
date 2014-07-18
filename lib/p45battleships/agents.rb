@@ -23,6 +23,16 @@ module P45battleships
       @grid.set_square point, attack_result
     end
 
+    def update previous_point, response_from_server
+      status = response_from_server['status'].intern if response_from_server['status']
+      attack previous_point, status if status and previous_point
+
+      if response_from_server['sunk']
+        ship_symbol = response_from_server['sunk'].intern
+        ship_sunk ship_symbol
+      end
+    end
+
   end
 
   class Agent
@@ -44,4 +54,95 @@ module P45battleships
     end
 
   end
+
+  class StatisticalAgent < Agent
+    def initialize
+      super
+      @mode = :hunt
+    end
+
+
+    # allowed squares are squares upon which a ship can rest its hull
+
+    def make_heat_map allowed_squares, heat_map = {}
+
+      def increment_heat_map_points points
+        points.each do |point|
+          p = point.to_hash
+          if heat_map.has_key? p
+            heat_map[p] += 1
+          else
+            heat_map[p] = 1
+          end
+        end
+      end
+
+      def invert_direction direction
+        case direction
+        when :east
+          :south
+        else 
+          :east
+        end
+      end
+
+      def count_possible_placements ship_type, direction
+        place_holder_point = Point.origin
+        test_ship = Ship.ship_factory ship_type, Point.origin, :east
+        (0..GRID_SIZE - test_ship.length).each do 
+          ship_start = Point.new_from_point place_holder_point
+
+          GRID_SIZE.times do
+            temp_ship = Ship.ship_factory ship_type, ship_start, direction
+            increment_heat_map_points ship.points if @opponent.grid.can_place_ship? temp_ship, allowed_squares
+            ship_start = ship_start.increment (invert_direction direction)
+          end
+
+          place_holder_point = place_holder_point.increment direction
+        end
+      end
+
+      @opponent.ships.keys.each do |ship_type| 
+        count_possible_placements ship_type, :east
+        count_possible_placements ship_type, :south
+      end
+
+      return heat_map
+    end
+
+
+    def hunt_mode
+      make_heat_map([:unknown]).max_by { |point, temp| temp }
+    end
+
+    def target_mode
+      (make_heat_map [:unknown, :recent_hit], (make_heat_map [:unknown])).max_by { |point, temp| temp }
+    end
+
+    def decision
+      heat_map_best_choice = if @mode = :hunt
+                               hunt_mode
+                             else
+                               target_mode
+                             end
+
+      Point.new_with_hash heat_map_best_choice
+    end
+
+    def ship_sunk ship_type
+      super ship_type
+      @opponent.grid.eliminate_recent_hits
+      @mode = :hunt
+    end
+
+    def update_grid point, attack_result
+      if attack_result == :hit and @mode == :hunt
+        @mode = :target
+        attack_result = :recent_hit
+      end
+      super point, attack_result
+    end
+
+  end
+
 end

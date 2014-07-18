@@ -3,10 +3,9 @@ module P45battleships
   class Player
     attr_accessor :opponent, :ships, :agent
 
-    def init_ship ship_type, starting_point, direction
-    end
-
     def initialize agent = nil
+      #a seperate opponent is tracked seperatetly from the agent to ensure the game is correctly played
+      @opponent = Opponent.new
       @agent = agent
       set_random_ships
     end
@@ -33,11 +32,47 @@ module P45battleships
       }
     end
 
+    def random_attack
+      p = Point.new_as_random
+      if @opponent.grid.is_unknown? p
+        p
+      else
+        random_attack
+      end
+    end
+
+    def go_first
+      random_attack
+    end
+
+    def get_attack
+      result = if @agent
+                 choice = @agent.make_choice
+                 if @opponent.grid.is_unknown? choice
+                   choice
+                 else
+                   puts "Randomly attacking"
+                   random_attack
+
+                 end
+               else
+                 random_attack
+               end
+      @previous_attack = result
+      raise ArgumentError, 'This is not a hash!'  if @previous_attack.is_a? Hash
+      result.to_hash
+    end
+
     def respond_to_server server_response
-      point = Point.new server_response['x'], server_response['y']
-      agent.update parse_attack_result(server_response)
-      response = attack! point
-      response.merge argent.make_decision
+        point = Point.new server_response['x'], server_response['y']
+        @agent.update_grid point, server_response['status'] if @agent
+        @opponent.update @previous_attack, server_response if @previous_attack
+        response = attack! point
+        if defeated?
+          { game_status: :lost }
+        else
+          response.merge get_attack 
+        end
     end
 
     #returns a response object
@@ -48,23 +83,21 @@ module P45battleships
         ship.attack! point
         if ship.is_hit? point
           response[:status] = :hit
+
           if ship.is_sunk?
             response[:sunk] = ship.name
             @ships.delete ship
-            if self.defeated?
-              response[:game_status] = :lost
-            end
           end
-          return response
+
+          if self.defeated?
+            response[:game_status] = :lost
+          end
+          return response #ensure that we leave the loop here!
         end
+
       end
       response[:status] = :miss
       response
-    end
-
-    def opponent_action point
-      response = attack! point
-      response.merge agent.decision
     end
 
     private

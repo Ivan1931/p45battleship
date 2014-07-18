@@ -27,8 +27,6 @@ describe Player do
   it 'has no intersecting ships' do
     # yucky O(n^2) algoritm to check for intersecting ships
     # is there any point in actually testing this since it is a totally random phenomenon
-    puts "\n#{player.to_s}\n"
-
     player.ships.each do |this|
       player.ships.each do |that|
         unless this == that
