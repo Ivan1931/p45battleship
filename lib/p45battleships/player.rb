@@ -72,11 +72,7 @@ module P45battleships
         @agent.update_grid @previous_attack, server_response['status'] if @agent and server_response['status']
         @opponent.update @previous_attack, server_response if @previous_attack
         response = attack! point
-        if defeated?
-          { game_status: :lost }
-        else
-          response.merge get_attack 
-        end
+        response.merge get_attack 
     end
 
     #returns a response object

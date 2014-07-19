@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'json'
+require 'pry'
 require_relative '../lib/p45battleships'
 
 include P45battleships
@@ -21,8 +22,13 @@ post '/register', provides: :json do
 end
 
 post '/nuke', provides: :json do
+  puts "\n" * 3
   content_type :json
   #puts "\nRequest body: #{request.body.read}\n"
   r = JSON.parse request.body.read
-  @@player.respond_to_server(r).to_json
+  puts "Player grid\n"
+  response = @@player.respond_to_server(r).to_json
+  puts @@player.ships.inspect
+  puts "Our response\n#{response}\n"
+  response
 end

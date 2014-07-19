@@ -125,7 +125,7 @@ module P45battleships
     end
 
     def target_mode
-      (make_heat_map [:unknown, :recent_hit], (make_heat_map [:unknown])).max_by { |point, temp| temp }[0]
+      (make_heat_map [:unknown, :recent_hit], (make_heat_map [:unknown, :hit, :recent_hit])).max_by { |point, temp| temp }[0]
     end
 
     def decision

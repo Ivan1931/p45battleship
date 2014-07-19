@@ -16,15 +16,17 @@ module P45battleships
 
 
     #the game communication loop
-    def run_game 
-      attack_result = @player.respond_to_server @initial_nuke
-      server_response = nuke attack_result
-      until server_says_lost? server_response or @player.defeated?
-        attack_result = @player.respond_to_server server_response
-        server_response = nuke attack_result unless attack_result.nil? or @player.defeated?
+    def run_game &block
+      response_to_server_attack = @player.respond_to_server @initial_nuke
+      server_response_to_attack = nuke response_to_server_attack
+      until server_says_lost? server_response_to_attack or @player.defeated?
+        response_to_server_attack = @player.respond_to_server server_response_to_attack
+        server_response_to_attack = nuke response_to_server_attack unless response_to_server_attack.nil? or @player.defeated?
+        block.call(response_to_server_attack, server_response_to_attack)
       end
-      puts "We defeated them!!!\n#{server_response}\n" if server_says_lost? server_response
+      puts "We defeated them!!!\n#{server_response_to_attack}\n" if server_says_lost? server_response_to_attack
       puts "They defeated us!!!\n#{attack_response}\n" if @player.defeated?
+      #binding.pry
       @history
     end
 
