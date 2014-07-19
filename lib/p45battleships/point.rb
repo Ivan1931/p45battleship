@@ -36,6 +36,10 @@ module P45battleships
       return {x: @x, y: @y}
     end
 
+    def to_s
+      "x: #{@x}, y: #{@y}"
+    end
+
     def is_legal?
       @x < GRID_SIZE and @y < GRID_SIZE and
         @x >= 0 and @y >= 0

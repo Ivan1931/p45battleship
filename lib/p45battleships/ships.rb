@@ -64,7 +64,7 @@ class Ship
     Set.new [:battleship, :carrier, :destroyer, :submarine, :patrol]
   end
 
-  def self.ship_factory starting_point, direction, ship_type
+  def self.ship_factory ship_type, starting_point, direction
     case ship_type
     when :carrier
       Carrier.new starting_point, direction

@@ -8,11 +8,23 @@ module P45battleships
     end
 
     def set_square point, square_type
-      square_type = :empty if square_type == :miss
-      Grid.raise_invalid_square_type!(square_type) unless Grid.valid_square_type? square_type
+
+      def intern_if_string s
+        if s.is_a? String
+          s.intern
+        else 
+          s
+        end
+      end
+
+      square_type = intern_if_string square_type
+
+      normalised_square_type = if square_type == :miss then :empty else square_type end
+
+      Grid.raise_invalid_square_type!(normalised_square_type) unless Grid.valid_square_type? normalised_square_type
 
       x, y = point.destruct
-      @grid[x][y] = square_type
+      @grid[x][y] = normalised_square_type
 
       self
     end

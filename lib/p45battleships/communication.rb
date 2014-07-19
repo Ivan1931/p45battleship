@@ -14,6 +14,7 @@ module P45battleships
       @player = Player.new StatisticalAgent.new
     end
 
+
     #the game communication loop
     def run_game 
       attack_result = @player.respond_to_server @initial_nuke
