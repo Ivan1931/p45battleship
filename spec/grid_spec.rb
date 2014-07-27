@@ -88,5 +88,14 @@ describe Grid do
       it { should eq(Grid.new(:empty).set_square(o, :submarine).set_square(o.increment(:south), :submarine)) }
     end
 
+    describe 'place_sunk_ship' do
+      it 'places a patrol boat on the origin correctly' do
+        p = Patrol.new o, :south
+        g = Grid.new(:empty).place_ship p
+        e = Grid.new(:empty).set_square o, :hit
+        expect(g.grid).to eq(e.place_sunk_ship(:patrol, o).grid)
+      end
+    end
+
   end
 end

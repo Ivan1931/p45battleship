@@ -12,7 +12,7 @@ module P45battleships
       raise_exception_for_illegal_points! unless self.is_legal?
     end
 
-    def self.new_with_hash *args
+    def self.new_with_hash args
       Point.new args[:x], args[:y]
     end
 
@@ -40,9 +40,9 @@ module P45battleships
       "x: #{@x}, y: #{@y}"
     end
 
-    def is_legal?
-      @x < GRID_SIZE and @y < GRID_SIZE and
-        @x >= 0 and @y >= 0
+    def is_legal? x = @x, y = @y
+      x < GRID_SIZE and y < GRID_SIZE and
+        x >= 0 and y >= 0
     end
 
     def increment direction

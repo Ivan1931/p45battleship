@@ -86,6 +86,11 @@ class Ship
     end
   end
 
+  def self.ship_length ship_type
+    Ship.raise_invalid_ship_error ship_type unless Ship.valid_ship_type? ship_type
+    [:patrol, :submarine, :destroyer, :battleship, :carrier].index(ship_type) + 1
+  end
+
   private
 
   def self.is_legal_length? length

@@ -61,7 +61,7 @@ describe Player do
       player.ships = player.ships.select { |ship| ship == patrol_boat }
 
       test_point = Point.new 5, 5
-      test_point.increment :south if test_point == patrol_point #makes sure that the test point is never at the patrol boat
+      test_point = test_point.increment :south if test_point == patrol_point #makes sure that the test point is never at the patrol boat
 
       expect(player.attack!(test_point)).to eq( { status: :miss } )
     end

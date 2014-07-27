@@ -1,3 +1,5 @@
+require 'yaml'
+
 module P45battleships
 
   class Opponent
@@ -15,6 +17,7 @@ module P45battleships
     end
 
     def ship_sunk ship_type
+      Ship.raise_invalid_ship_error ship_type unless Ship.valid_ship_type? ship_type
       @possible_ships[ship_type] -= 1
     end
 
@@ -34,6 +37,10 @@ module P45battleships
         ship_symbol = response_from_server['sunk'].intern
         ship_sunk ship_symbol
       end
+    end
+
+    def remaining_ships
+      @possible_ships.map { |k, v| k if v > 0 }.select { |a| !a.nil? }
     end
 
   end
@@ -64,18 +71,46 @@ module P45battleships
       @mode = :hunt
     end
 
+    def get_move_from_heat_map heat_map
+      heat_map = heat_map.select { |k, v| @opponent.grid.is_unknown?(Point.new_with_hash k) }
+
+      puts project_heat_map heat_map
+
+      return heat_map.max_by { |k, v| v }[0]
+    end
+
+    def project_heat_map heat_map
+      temp = Array.new(GRID_SIZE) { Array.new(GRID_SIZE, "X") }
+      heat_map.each do |k, v|
+        x = k[:x]
+        y = k[:y]
+        temp[x][y] = "#{v.round(3)}"
+      end
+      temp = temp.map do |s|
+        s.join "\t"
+      end
+      temp.join "\n"
+    end
 
     # allowed squares are squares upon which a ship can rest its hull
 
     def make_heat_map allowed_squares, heat_map = {}
 
+
       increment_heat_map_points = lambda do |points|
+
+        if @mode == :target and points.any? { |point| @opponent.grid.value_for_point(point) == :recent_hit }
+          inc = 2
+        else
+          inc = 1
+        end
+
         points.each do |point|
           p = point.to_hash
           if heat_map.has_key? p
-            heat_map[p] += 1
+            heat_map[p] += inc
           else
-            heat_map[p] = 1
+            heat_map[p] = inc
           end
         end
       end
@@ -90,18 +125,22 @@ module P45battleships
       end
 
       count_possible_placements = lambda do |ship_type, direction|
-        #puts "\nShip: #{ship_type}"
-        #puts "Direction: #{direction}"
+
         place_holder_point = Point.origin
         test_ship = Ship.ship_factory ship_type, Point.origin, :east
-        (0..GRID_SIZE - test_ship.length - 1).each do 
+
+        outer_iterations = GRID_SIZE - test_ship.length - 1
+
+        outer_iterations.times do 
           ship_start = Point.new_from_point place_holder_point
 
-          (GRID_SIZE).times do
+          GRID_SIZE.times do
             temp_ship = Ship.ship_factory ship_type, ship_start, direction
-            increment_heat_map_points.call temp_ship.points if @opponent.grid.can_place_ship? temp_ship, allowed_squares
-            #puts ship_start.to_s
-            begin
+            if @opponent.grid.can_place_ship? temp_ship, allowed_squares
+              increment_heat_map_points.call temp_ship.points
+            end
+
+            begin #to remove the error at the last iteration
               ship_start = ship_start.increment (invert_direction.call direction)
             rescue ArgumentError
             end
@@ -112,20 +151,23 @@ module P45battleships
       end
 
       @opponent.possible_ships.keys.each do |ship_type| 
-        count_possible_placements.call ship_type, :east
-        count_possible_placements.call ship_type, :south
+        @opponent.possible_ships[ship_type].times do 
+          count_possible_placements.call ship_type, :east
+          count_possible_placements.call ship_type, :south
+        end
       end
+
 
       return heat_map
     end
 
 
     def hunt_mode
-      make_heat_map([:unknown]).max_by { |point, temp| temp }[0]
+      get_move_from_heat_map(make_heat_map([:unknown, :hit]))
     end
 
     def target_mode
-      (make_heat_map [:unknown, :recent_hit], (make_heat_map [:unknown, :hit, :recent_hit])).max_by { |point, temp| temp }[0]
+      get_move_from_heat_map(make_heat_map [:unknown, :recent_hit, :recent_hit])
     end
 
     def decision
@@ -136,9 +178,7 @@ module P45battleships
                                target_mode
                              end
 
-      r = Point.new heat_map_best_choice[:x], heat_map_best_choice[:y]
-      puts r.to_s
-      r
+      Point.new heat_map_best_choice[:x], heat_map_best_choice[:y]
     end
 
     def ship_sunk ship_type
@@ -148,7 +188,9 @@ module P45battleships
     end
 
     def update_grid point, attack_result
-      if attack_result == :hit and @mode == :hunt
+      puts "attack_result #{attack_result}"
+      if attack_result.intern == :hit
+        puts "======> Target mode <=======\n"
         @mode = :target
         attack_result = :recent_hit
       end

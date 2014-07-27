@@ -29,6 +29,7 @@ module P45battleships
       self
     end
 
+
     def can_place_ship? ship, allowed_square_type = [:unknown]
       allowed_square_type.each { |type| Grid.raise_invalid_square_type!(type) unless Grid.valid_square_type? type }
       !ship.points.map do |point|
@@ -48,6 +49,42 @@ module P45battleships
         set_square point, square_type
       end
       self
+    end
+
+    def on point, *square_types
+      puts square_types.map {|t| t.class }.inspect
+      square_types.each { |type| Grid.raise_invalid_square_type! type unless Grid.valid_square_type? type }
+      type_at_point = value_for_point point
+      square_types.include? type_at_point
+    end
+
+    def place_sunk_ship ship_type, final_hit_point
+      ship_length = Ship.ship_length ship_type
+      incrementations = ship_length - 1
+
+      possible_directions = [:north, :south, :east, :west].select do |direction|
+        is_possible = true
+        temp_point = final_hit_point
+        begin 
+          incrementations.times do 
+            temp_point = temp_point.increment direction
+          end
+        rescue
+          is_possible = false
+        end
+        is_possible
+      end
+
+      possible_ship_orientations = possible_directions.map do |direction|
+        Ship.ship_factory ship_type, final_hit_point, direction
+      end
+
+      ship_to_place = possible_ship_orientations.select do |ship|
+        ship.points.all? { |point| on(point, :recent_hit, :hit) }
+      end.first
+
+      place_ship ship_to_place
+
     end
 
     def eliminate_recent_hits
