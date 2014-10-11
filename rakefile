@@ -1,0 +1,12 @@
+task :server do
+  ruby 'bin/server.rb'
+end
+
+task :test_game do
+  ruby 'launch.rb'
+end
+
+task :spec do
+  require 'rspec/core/rake_task'
+  RSpec::Core::RakeTask.new(:spec)
+end

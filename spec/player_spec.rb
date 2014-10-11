@@ -54,8 +54,8 @@ describe Player do
 
   end
 
-  describe 'attack!' do
-    it 'when attacking no ships the attack is always a miss' do
+  describe 'hit_status_for' do
+    it 'when attacking no ships the hit_status is always a miss' do
       patrol_boat = player.ships.select { |ship| ship.is_a? Patrol }.first
       patrol_point = patrol_boat.points.first
       player.ships = player.ships.select { |ship| ship == patrol_boat }
@@ -63,19 +63,19 @@ describe Player do
       test_point = Point.new 5, 5
       test_point = test_point.increment :south if test_point == patrol_point #makes sure that the test point is never at the patrol boat
 
-      expect(player.attack!(test_point)).to eq( { status: :miss } )
+      expect(player.hit_status_for(test_point)).to eq( { status: :miss } )
     end
 
     it 'when attacking an occupied point we have a hit' do
       submarine_point = player.ships.select { |ship| ship.is_a? Submarine }.first.points.first #this horrifying line ensures that there is a non-empty point that is not a patrol boat
-      expect(player.attack! submarine_point).to eq( {status: :hit} )
+      expect(player.hit_status_for submarine_point).to eq( {status: :hit} )
     end
 
     describe 'sunk and game loss' do
 
       it 'returns sunk when a boat is sunk' do
         patrol_point = player.ships.select { |ship| ship.is_a? Patrol }.first.points.first # patrol is selected since it has a single point and thus will be instantly sunk
-        expect(player.attack! patrol_point).to eq( { status: :hit, sunk: :patrol } )
+        expect(player.hit_status_for patrol_point).to eq( { status: :hit, sunk: :patrol } )
       end
 
       it 'returns a loss when the final ship is sunk' do
@@ -83,11 +83,11 @@ describe Player do
         patrol_point = patrol_boat.points.first
         player.ships = player.ships.select { |ship| ship == patrol_boat }
 
-        expect(player.attack! patrol_point).to eq( { status: :hit, sunk: :patrol, game_status: :lost } )
+        expect(player.hit_status_for patrol_point).to eq( { status: :hit, sunk: :patrol, game_status: :lost } )
       end
     end
 
-    describe 'passing attack information' do 
+    describe 'passing hit_status information' do 
 
     end
   end
