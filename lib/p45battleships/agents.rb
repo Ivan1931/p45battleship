@@ -27,7 +27,6 @@ module P45battleships
   class StatisticalAgent < Agent
     def initialize
       super
-      @mode = :hunt
       @hits = 0
       @hits_since_last_sunk = []
     end
@@ -76,15 +75,6 @@ module P45battleships
           elsif @opponent.grid.is_unknown? point
             heat_map[p] = inc
           end
-        end
-      end
-
-      invert_direction = lambda do |direction|
-        case direction
-        when :east
-          :south
-        else 
-          :east
         end
       end
 

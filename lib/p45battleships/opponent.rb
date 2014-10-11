@@ -20,7 +20,6 @@ module P45battleships
     end
 
     def attack point, attack_result
-      x, y = point.destruct
       @grid.set_square point, attack_result
     end
 
