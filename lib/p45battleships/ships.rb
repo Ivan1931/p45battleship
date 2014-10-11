@@ -64,7 +64,7 @@ class Ship
     Set.new [:battleship, :carrier, :destroyer, :submarine, :patrol]
   end
 
-  def self.normalise_to_ship_type ship_type_string
+  def self.convert_to_ship_symbol ship_type_string
 
     throw ArgumentError, "Ship type must be a string to be normalised" unless ship_type_string.is_a? String
 

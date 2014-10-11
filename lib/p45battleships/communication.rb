@@ -19,10 +19,10 @@ module P45battleships
     def run_game &block
       response_to_server_attack = @player.respond_to_server @initial_nuke
       server_response_to_attack = nuke response_to_server_attack
-      count = 0
+      @count = 0
 
       until server_says_lost? server_response_to_attack or @player.defeated?
-        count += 1
+        @count += 1
         response_to_server_attack = @player.respond_to_server server_response_to_attack
         server_response_to_attack = nuke response_to_server_attack unless response_to_server_attack.nil? or @player.defeated?
         block.call(@player, response_to_server_attack, server_response_to_attack)
@@ -36,9 +36,9 @@ module P45battleships
         puts "They defeated us\n#{response_to_server_attack}\n" 
         winner = :them
       end
-      puts "Number of volleys\n#{count}"
+      puts "Number of volleys\n#{@count}"
       #binding.pry
-      { history: @history, winner: winner, volleys: count }
+      { history: @history, winner: winner, volleys: @count }
     end
 
     def server_says_lost? response

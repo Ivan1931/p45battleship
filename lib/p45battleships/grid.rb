@@ -99,14 +99,6 @@ module P45battleships
       return self
     end
 
-    def eliminate_recent_hits
-      GRID_SIZE.times do |i|
-        GRID_SIZE.times do |j|
-          @grid[i][j] = :hit if @grid[i][j] == :recent_hit
-        end
-      end
-    end
-
     def is_unknown? point
       (value_for_point point) == :unknown
     end
@@ -136,7 +128,7 @@ module P45battleships
       when :hit
         "X"
       when :recent_hit
-        "x"
+        "r"
       else
         square_type.to_s[0].upcase
       end
