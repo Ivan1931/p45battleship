@@ -9,15 +9,7 @@ module P45battleships
 
     def set_square point, square_type
 
-      def intern_if_string s
-        if s.is_a? String
-          s.intern
-        else 
-          s
-        end
-      end
-
-      square_type = intern_if_string square_type
+      square_type = if square_type.class.to_s == "String" then square_type.intern else square_type end # the class to string thing was done because somehow square type is no longer a string
 
       normalised_square_type = if square_type == :miss then :empty else square_type end
 
@@ -43,22 +35,32 @@ module P45battleships
       @grid[x][y]
     end
 
-    def place_ship ship
-      square_type = ship.name
-      ship.points.each do |point|
+    def place_points points, square_type
+      points.each do |point| 
         set_square point, square_type
       end
       self
     end
 
+    def place_ship ship
+      ship_type = ship.name
+      points = ship.points
+      place_points points, ship_type
+    end
+
     def on point, *square_types
-      puts square_types.map {|t| t.class }.inspect
       square_types.each { |type| Grid.raise_invalid_square_type! type unless Grid.valid_square_type? type }
       type_at_point = value_for_point point
       square_types.include? type_at_point
     end
 
-    def place_sunk_ship ship_type, final_hit_point
+    def place_sunk_ship final_hit_point, ship_type
+      #Patrol is a trivial case so set it immediately
+      if ship_type == :patrol
+        set_square final_hit_point, :patrol
+        return self
+      end
+
       ship_length = Ship.ship_length ship_type
       incrementations = ship_length - 1
 
@@ -79,12 +81,22 @@ module P45battleships
         Ship.ship_factory ship_type, final_hit_point, direction
       end
 
-      ship_to_place = possible_ship_orientations.select do |ship|
+      # A ship can only rest upon an area if all its points are placed
+      ships_to_place = possible_ship_orientations.select do |ship|
         ship.points.all? { |point| on(point, :recent_hit, :hit) }
-      end.first
+      end
 
-      place_ship ship_to_place
+      # The fact that there will alway be at least one ship is invariant based on the fact that we know about the hit
 
+      if ships_to_place.length > 1 # more than one possible ship, we cannot be certain where the ship lies
+        ships_to_place.each do |ship|
+          place_points ship.points, :likely_ship 
+        end
+      else ships_to_place.length == 1 # Precisely one ship, we know exactly where it is
+        place_ship ships_to_place.first
+      end
+
+      return self
     end
 
     def eliminate_recent_hits
@@ -104,7 +116,7 @@ module P45battleships
     end
 
     def self.valid_square_type? square_type
-      square_type == :empty or square_type == :recent_hit or square_type == :hit or square_type == :unknown or Ship.valid_ship_type? square_type
+      square_type == :empty or square_type == :recent_hit or square_type == :hit or square_type == :unknown or square_type == :likely_ship or Ship.valid_ship_type? square_type
     end
 
     def self.raise_invalid_square_type! square_type

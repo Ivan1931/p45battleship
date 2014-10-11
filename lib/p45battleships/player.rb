@@ -67,16 +67,25 @@ module P45battleships
       result.to_hash
     end
 
+    def update_agent server_response
+      @agent.update_grid @previous_attack, server_response['status'] if @agent and server_response['status']
+      @agent.ship_sunk server_response['sunk'] if server_response['sunk']
+    end
+
+    def update_opponent server_response
+      @opponent.update @previous_attack, server_response if @previous_attack
+    end
+
     def respond_to_server server_response
         point = Point.new server_response['x'], server_response['y']
-        @agent.update_grid @previous_attack, server_response['status'] if @agent and server_response['status']
-        @opponent.update @previous_attack, server_response if @previous_attack
-        response = attack! point
+        update_opponent server_response
+        update_agent server_response if @agent
+        response = hit_status_for point
         response.merge get_attack 
     end
 
     #returns a response object
-    def attack! point
+    def hit_status_for point
       #tripple nestings are very bad
       response = {}
       @ships.each do |ship|

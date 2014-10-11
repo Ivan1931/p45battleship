@@ -1,4 +1,5 @@
 require 'yaml'
+require 'pry'
 
 module P45battleships
 
@@ -23,9 +24,6 @@ module P45battleships
 
     def attack point, attack_result
       x, y = point.destruct
-      if attack_result == :miss
-        attack_result = :empty
-      end
       @grid.set_square point, attack_result
     end
 
@@ -56,6 +54,7 @@ module P45battleships
     end
 
     def ship_sunk ship_type
+      ship_type = Ship.normalise_to_ship_type ship_type if ship_type.is_a? String
       @opponent.ship_sunk ship_type
     end
 
@@ -72,14 +71,11 @@ module P45battleships
     end
 
     def get_move_from_heat_map heat_map
-      heat_map = heat_map.select { |k, v| @opponent.grid.is_unknown?(Point.new_with_hash k) }
-
-      puts project_heat_map heat_map
-
-      return heat_map.max_by { |k, v| v }[0]
+      ret = heat_map.select { |k, v| @opponent.grid.is_unknown?(Point.new_with_hash k) }
+      ret.max_by { |k, v| v }[0]
     end
 
-    def project_heat_map heat_map
+    def project_heat_map heat_map # converts a heat map string
       temp = Array.new(GRID_SIZE) { Array.new(GRID_SIZE, "X") }
       heat_map.each do |k, v|
         x = k[:x]
@@ -126,27 +122,28 @@ module P45battleships
 
       count_possible_placements = lambda do |ship_type, direction|
 
-        place_holder_point = Point.origin
-        test_ship = Ship.ship_factory ship_type, Point.origin, :east
+        #this part finds a hash of all possible places for ships to start
+        possible_starting_points = []
+        GRID_SIZE.times do |i|
+          GRID_SIZE.times do |j|
+            p = Point.new i, j
+            possible_starting_points << p if @opponent.grid.is_unknown? p
+          end
+        end
 
-        outer_iterations = GRID_SIZE - test_ship.length - 1
-
-        outer_iterations.times do 
-          ship_start = Point.new_from_point place_holder_point
-
-          GRID_SIZE.times do
+        #now iterate through starting points and see if ships can be placed
+        possible_starting_points.each do |ship_start|
+          continue = true
+          begin
             temp_ship = Ship.ship_factory ship_type, ship_start, direction
+          rescue ArgumentError
+            continue = false
+          end
+          if continue
             if @opponent.grid.can_place_ship? temp_ship, allowed_squares
               increment_heat_map_points.call temp_ship.points
             end
-
-            begin #to remove the error at the last iteration
-              ship_start = ship_start.increment (invert_direction.call direction)
-            rescue ArgumentError
-            end
           end
-
-          place_holder_point = place_holder_point.increment direction
         end
       end
 
@@ -156,7 +153,9 @@ module P45battleships
           count_possible_placements.call ship_type, :south
         end
       end
+      binding.pry if heat_map.length == 0
 
+      #puts @opponent.remaining_ships.length.to_s
 
       return heat_map
     end
@@ -167,7 +166,7 @@ module P45battleships
     end
 
     def target_mode
-      get_move_from_heat_map(make_heat_map [:unknown, :recent_hit, :recent_hit])
+      get_move_from_heat_map(make_heat_map [:unknown, :hit, :recent_hit])
     end
 
     def decision
@@ -188,9 +187,7 @@ module P45battleships
     end
 
     def update_grid point, attack_result
-      puts "attack_result #{attack_result}"
       if attack_result.intern == :hit
-        puts "======> Target mode <=======\n"
         @mode = :target
         attack_result = :recent_hit
       end

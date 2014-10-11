@@ -64,6 +64,23 @@ class Ship
     Set.new [:battleship, :carrier, :destroyer, :submarine, :patrol]
   end
 
+  def self.normalise_to_ship_type ship_type_string
+
+    throw ArgumentError, "Ship type must be a string to be normalised" unless ship_type_string.is_a? String
+
+    ["Submarine", "Battleship", "Destroyer", "Carrier"].each do |ship|
+      ship_type_string.gsub ship, ship.downcase
+    end
+
+    ship_type_string.gsub "Patrol Boat", "patrol"
+
+    ship_type = ship_type_string.intern
+
+    Ship.raise_invalid_ship_error ship_type unless Ship.valid_ship_type? ship_type
+
+    return ship_type
+  end
+
   def self.ship_factory ship_type, starting_point, direction
     case ship_type
     when :carrier

@@ -93,9 +93,40 @@ describe Grid do
         p = Patrol.new o, :south
         g = Grid.new(:empty).place_ship p
         e = Grid.new(:empty).set_square o, :hit
-        expect(g.grid).to eq(e.place_sunk_ship(:patrol, o).grid)
+        expect(e.place_sunk_ship(o, :patrol).grid).to eq(g.grid)
+      end
+
+      describe 'placing carrier at different points' do
+        let(:test_grid) do
+          temp_point = o
+          emp = Grid.new :empty
+          5.times do
+            emp.set_square temp_point, :hit
+            temp_point = temp_point.increment :south
+          end
+          emp
+        end
+        let(:carrier) { Carrier.new o, :south }
+        let(:carrier_grid)  { Grid.new(:empty).place_ship carrier }
+
+        it 'correctly places carrier when the final hit is the origin' do
+          expect(test_grid.place_sunk_ship o, :carrier).to eq(carrier_grid)
+        end
+
+        it 'correctly places carrier when the final hit is in the middle of the carrier' do
+          expect(test_grid.place_sunk_ship o.increment(:south).increment(:south), :carrier).to eq(carrier_grid)
+        end
+
+      end
+
+      it 'places likely_ship as a square_type if there is an ambiguity with respect to how many ships could be placed' do
+
       end
     end
+
+  end
+
+  describe 'reconstructing grid from game history' do
 
   end
 end

@@ -17,7 +17,7 @@ end
 
 post '/register', provides: :json do
   content_type :json
-  @@player = Player.new
+  @@player = Player.new 
   @@player.random_attack.to_hash.to_json
 end
 
