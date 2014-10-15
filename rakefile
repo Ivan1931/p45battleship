@@ -6,6 +6,10 @@ task :test_game do
   ruby 'launch.rb'
 end
 
+task :play do
+  ruby 'launch.rb -h http://battle.platform45.com/'
+end
+
 task :spec do
   require 'rspec/core/rake_task'
   RSpec::Core::RakeTask.new(:spec)
