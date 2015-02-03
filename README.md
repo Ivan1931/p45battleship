@@ -19,3 +19,4 @@ The server is a sinartra HTTP JSON server and can be started by running ```./bin
 
 Agent can play locally, again the random local server by running ./bin/p45battleships
 To play against platform45s server, run ```./bin/p45battleships -h http://battle.platform45.com/```
+To play more than once, run ```./bin/p45battleships -r times_to_run```
