@@ -1,13 +1,13 @@
 task :server do
-  ruby 'bin/server.rb'
+  ruby 'bin/server'
 end
 
 task :test_game do
-  ruby 'launch.rb'
+  ruby 'bin/P45battleships'
 end
 
 task :play do
-  ruby 'launch.rb -h http://battle.platform45.com/'
+  ruby 'bin/p45battleships -h http://battle.platform45.com/'
 end
 
 task :spec do

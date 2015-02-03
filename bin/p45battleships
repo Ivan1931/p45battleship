@@ -1,23 +1,30 @@
+#!/usr/bin/env ruby
+
 require 'pry'
 require 'optparse'
-require_relative 'lib/p45battleships'
+require_relative '../lib/p45battleships'
 include P45battleships
 
 run_times = 1
 host = "localhost:4567"
+default_host = false
 
 total = 0
 
 OptionParser.new do |opts|
-  opts.on('-r', '--runtimes RUN_TIMES', "Number of times to run script") do |n|
+  opts.banner = "Usage: battleship [options]"
+
+  opts.on('-r','--runtimes RUN_TIMES', "Number of times to run script. Default #{run_times}") do |n|
     run_times = n.to_i
   end
-  opts.on('-h', '--host HOST', "The address at which to register") do |h|
+
+  opts.on('-h', '--host HOST', "Url of the server that you want to register with. Default #{host}") do |h|
     host = h
+    default_host = true
   end
 end.parse!
 
-run_times.times do 
+run_times.times do
   g = Game.new host
   g.register 'jonah.graham.hooper@gmail.com'
   result = g.run_game do |player, our_attack, their_attack|

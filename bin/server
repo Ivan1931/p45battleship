@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 require 'sinatra'
 require 'json'
 require 'pry'
@@ -6,7 +8,6 @@ require_relative '../lib/p45battleships'
 include P45battleships
 
 get '/' do
-
 end
 
 post '/test', provides: :json do
